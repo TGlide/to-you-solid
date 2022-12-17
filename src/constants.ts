@@ -1,0 +1,2 @@
+export const { VITE_DATABASE_ID: DATABASE_ID, VITE_TODO_COLLECTION_ID: TODO_COLLECTION_ID } =
+	import.meta.env;

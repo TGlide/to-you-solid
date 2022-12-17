@@ -1,7 +1,23 @@
+import { Query } from 'appwrite';
+import { useRouteData } from 'solid-start';
+import { createServerData$ } from 'solid-start/server';
+import { DATABASE_ID, TODO_COLLECTION_ID } from '~/constants';
+import { databases } from '~/lib/appwrite';
 import { classes } from '~/utils/style';
 import styles from './index.module.scss';
 
+export function routeData() {
+	return createServerData$(async () => {
+		const todos = await databases.listDocuments(DATABASE_ID, TODO_COLLECTION_ID);
+		return todos;
+	});
+}
+
 export default function Home() {
+	const todos = useRouteData<typeof routeData>();
+
+	console.log(todos());
+
 	return (
 		<div class={`container ${styles.container}`}>
 			<div class={styles.header}>
