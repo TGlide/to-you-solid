@@ -3,7 +3,7 @@
   display: none;
 }
 
-@media (--bp-lg) {
+@media #{$bp-lg} {
   .lg {
     display: block;
   }
@@ -13,7 +13,7 @@
   display: block;
 }
 
-@media (--bp-lg) {
+@media #{$bp-lg} {
   .hidden-lg {
     display: none !important;
   }

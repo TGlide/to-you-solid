@@ -1,0 +1,13 @@
+@import './reset.scss';
+@import './tokens.scss';
+@import './theme.scss';
+@import './animation.scss';
+@import './utility/index.scss';
+@import './components/index.scss';
+
+body {
+	font-family: var(--ff-body);
+	background-color: var(--color-background);
+	color: var(--color-foreground);
+	position: relative;
+}

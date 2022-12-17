@@ -302,11 +302,11 @@
 	--inner-shadow-focus: inset 0px -6px 20px rgba(24, 48, 138, 0.12);
 }
 
-@custom-media --bp-below-sm (max-width: 479px);
-@custom-media --bp-sm (min-width: 480px);
-@custom-media --bp-below-md (max-width: 767px);
-@custom-media --bp-md (min-width: 768px);
-@custom-media --bp-below-lg (max-width: 1023px);
-@custom-media --bp-lg (min-width: 1024px);
-@custom-media --bp-below-xl (max-width: 1279px);
-@custom-media --bp-xl (min-width: 1280px);
+$bp-below-sm: "(max-width: 479px)";
+$bp-sm: "(min-width: 480px)";
+$bp-below-md: "(max-width: 767px)";
+$bp-md: "(min-width: 768px)";
+$bp-below-lg: "(max-width: 1023px)";
+$bp-lg: "(min-width: 1024px)";
+$bp-below-xl: "(max-width: 1279px)";
+$bp-xl: "(min-width: 1280px)";
