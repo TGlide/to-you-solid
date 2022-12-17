@@ -1,0 +1,22 @@
+.input {
+	@extend .text-m;
+
+	background-color: var(--palette-grey-95);
+	border: none;
+	border-radius: var(--radii-s);
+	outline: 2px solid var(--outline-color, transparent);
+
+	padding: var(--space-8) var(--space-16);
+
+	transition: var(--transition-appearance);
+
+	&:hover {
+		background-color: var(--palette-grey-90);
+	}
+
+	&:focus,
+	&:active {
+		background-color: var(--palette-grey-95);
+		--outline-color: var(--palette-cyan-40);
+	}
+}

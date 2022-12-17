@@ -1,0 +1,71 @@
+.btn {
+	@extend .text-m;
+
+	background-color: var(--palette-grey-95);
+	border-radius: var(--radii-s);
+	cursor: pointer;
+	outline: 2px solid var(--outline-color, transparent);
+
+	padding: var(--space-8) var(--space-12);
+
+	transition: var(--transition-appearance);
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.5;
+	}
+
+	&:not(:disabled) {
+		&:hover {
+			background-color: var(--palette-grey-90);
+		}
+
+		&:focus,
+		&:active {
+			background-color: var(--palette-grey-95);
+			--outline-color: var(--palette-cyan-40);
+		}
+	}
+}
+
+.btn-success {
+	background-color: var(--palette-green-95);
+	color: var(--palette-green-20);
+
+	&:not(:disabled) {
+		&:hover {
+			background-color: var(--palette-green-90);
+		}
+
+		&:focus,
+		&:active {
+			background-color: var(--palette-green-95);
+			--outline-color: var(--palette-green-40);
+		}
+	}
+}
+
+.btn-danger {
+	color: var(--palette-red-60);
+
+	&:not(:disabled) {
+		&:focus,
+		&:active {
+			--outline-color: var(--palette-red-60);
+		}
+	}
+}
+
+.btn-s {
+	font-size: var(--fs-s);
+	line-height: var(--line-height-s);
+	padding: var(--space-4) var(--space-8);
+}
+
+.btn-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: var(--space-4) var(--space-4);
+}
