@@ -1,4 +1,3 @@
-import { Query } from 'appwrite';
 import { useRouteData } from 'solid-start';
 import { createServerData$ } from 'solid-start/server';
 import { DATABASE_ID, TODO_COLLECTION_ID } from '~/constants';
