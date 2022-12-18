@@ -1,17 +1,30 @@
+import { Query } from 'appwrite';
 import { For } from 'solid-js';
 import { useRouteData } from 'solid-start';
 import { createServerData$ } from 'solid-start/server';
+import { Todo } from '~/components/Todo';
 import { DATABASE_ID, TODO_COLLECTION_ID } from '~/constants';
 import { databases } from '~/lib/appwrite';
+import { isModelsDocumentList } from '~/types/appwrite';
+import { isTodo } from '~/types/todo';
 import { Icon } from '~/UI/Icon';
-import { Todo } from '~/components/Todo';
 import { classes } from '~/utils/style';
 import styles from './index.module.scss';
 
 export function routeData() {
-	return createServerData$(async () => {
-		const todos = await databases.listDocuments(DATABASE_ID, TODO_COLLECTION_ID);
-		return todos;
+	return createServerData$(async (_, ev) => {
+		// TODO: Implement cookie session
+		const sessionKey = 'solid-key';
+
+		const todos = await databases.listDocuments(DATABASE_ID, TODO_COLLECTION_ID, [
+			Query.equal('session_key', sessionKey)
+		]);
+
+		if (isModelsDocumentList(todos, isTodo)) {
+			return todos;
+		}
+
+		throw new Error('Failed to load todos');
 	});
 }
 

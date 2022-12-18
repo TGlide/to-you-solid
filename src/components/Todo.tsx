@@ -20,7 +20,7 @@ export const Todo: Component<Props> = (props) => {
 			classList={{ disabled: props.disabled }}
 		>
 			<input type="hidden" name="id" value={props.todo.$id} />
-			<input type="hidden" name="checked" value={!props.todo.checked} />
+			<input type="hidden" name="checked" value={!props.todo.checked as any} />
 
 			<Checkbox
 				checked={props.todo.checked}

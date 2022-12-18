@@ -1,11 +1,11 @@
+import { createCookieSessionStorage } from 'solid-start';
 import { v4 as uuidv4 } from 'uuid';
 
-export const getSession = (cookies: any) => {
-	let session = cookies.get('sessionKey');
-	if (!session) {
-		session = uuidv4();
-		cookies.set('sessionKey', session);
+export const sessionStorage = createCookieSessionStorage({
+	cookie: {
+		name: 'session',
+		sameSite: 'lax',
+		path: '/',
+		httpOnly: true
 	}
-
-	return session;
-};
+});
