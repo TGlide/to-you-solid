@@ -1,5 +1,5 @@
-export const classes = (...classNames: string[]) => {
-	return classNames.filter(Boolean).join(' ');
+export const classes = (...classNames: unknown[]) => {
+	return classNames.filter((n) => typeof n === 'string').join(' ');
 };
 
 export function pxToRem(px: number): number {

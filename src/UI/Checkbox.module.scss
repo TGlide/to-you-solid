@@ -1,0 +1,18 @@
+.button {
+  color: var(--palette-cyan-40);
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.iconWrapper {
+  display: grid;
+  place-items: center;
+
+  opacity: 0;
+
+  transition: 200ms ease;
+  
+  &.checked {
+    opacity: 1;
+  }
+}

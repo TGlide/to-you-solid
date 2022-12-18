@@ -1,7 +1,10 @@
+import { For } from 'solid-js';
 import { useRouteData } from 'solid-start';
 import { createServerData$ } from 'solid-start/server';
 import { DATABASE_ID, TODO_COLLECTION_ID } from '~/constants';
 import { databases } from '~/lib/appwrite';
+import { Icon } from '~/UI/Icon';
+import { Todo } from '~/components/Todo';
 import { classes } from '~/utils/style';
 import styles from './index.module.scss';
 
@@ -15,14 +18,12 @@ export function routeData() {
 export default function Home() {
 	const todos = useRouteData<typeof routeData>();
 
-	console.log(todos());
-
 	return (
-		<div class={`container ${styles.container}`}>
+		<div class={classes(styles.container, 'container')}>
 			<div class={styles.header}>
 				<div class={styles.points}>
 					{/* <Counter value={points} /> */}
-					{/* <Icon icon="star" /> */}
+					<Icon icon="star" />
 				</div>
 				<div class={styles.actions}>
 					<form method="post" action="?/deleteChecked">
@@ -60,11 +61,13 @@ export default function Home() {
 			</form>
 
 			<div class={styles.todos}>
-				{/* {#each todos as todo (todo.tempId || todo.$id)}
-			<div animate:flip={{ duration: 500 }} in:fade out:fade={{ duration: 100 }}>
-				<Todo {todo} disabled={todo.disabled} />
-			</div>
-		{/each} */}
+				<For each={todos()?.documents}>
+					{(todo) => (
+						// <div animate:flip={{ duration: 500 }} in:fade out:fade={{ duration: 100 }}>
+						<Todo todo={todo} disabled={todo.disabled} />
+						// </div>
+					)}
+				</For>
 			</div>
 		</div>
 	);

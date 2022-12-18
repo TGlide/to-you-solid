@@ -1,0 +1,46 @@
+.form {
+  transition: opacity var(--transition-appearance);
+
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    & :global(*) {
+      pointer-events: none;
+    }
+  }
+}
+
+.todo {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  margin-left: var(--space-8);
+  transition: var(--transition-appearance);
+
+  &.checked {
+    opacity: 0.5;
+  }
+}
+
+.points {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+
+  color: var(--palette-cyan-30);
+  font-weight: var(--fw-bold);
+
+  margin-left: auto;
+}
+
+.clickable {
+  display: grid;
+  place-items: center;
+
+  color: var(--palette-red-60);
+  margin-left: var(--space-12);
+}
