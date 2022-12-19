@@ -1,17 +1,23 @@
 import { Query } from 'appwrite';
-import { For } from 'solid-js';
+import { createEffect, createSignal, For } from 'solid-js';
 import { useRouteData } from 'solid-start';
-import { createServerAction$, createServerData$ } from 'solid-start/server';
+import {
+	createServerAction$,
+	createServerData$,
+	createServerMultiAction$,
+	redirect
+} from 'solid-start/server';
 import { Todo } from '~/components/Todo';
 import { DATABASE_ID, TODO_COLLECTION_ID } from '~/constants';
 import { databases } from '~/lib/appwrite';
 import { sessionKey } from '~/lib/session';
-import { isModelsDocumentList } from '~/types/appwrite';
-import { isAddTodoInput, isTodo, TodoDocument } from '~/types/todo';
+import { isModelsDocumentList, ModelsDocument } from '~/types/appwrite';
+import { AddTodoInput, isAddTodoInput, isTodo, TodoDocument } from '~/types/todo';
 import { Icon } from '~/UI/Icon';
 import { formDataToObject } from '~/utils/object';
 import { classes } from '~/utils/style';
 import styles from './index.module.scss';
+import { v4 as uuidv4 } from 'uuid';
 
 export function routeData() {
 	return createServerData$(async (_, ev) => {
@@ -28,31 +34,79 @@ export function routeData() {
 	});
 }
 
+const addTodoFn = async (formData: FormData) => {
+	const data = formDataToObject(formData, { transformers: { points: Number } });
+
+	if (!isAddTodoInput(data)) {
+		return console.error('Error on todo add: Invalid data');
+	}
+
+	await databases.createDocument<TodoDocument>(DATABASE_ID, TODO_COLLECTION_ID, 'unique()', {
+		...data,
+		session_key: sessionKey
+	});
+
+	return redirect('/');
+};
+
 export default function Home() {
 	const todos = useRouteData<typeof routeData>();
-	const [_, { Form }] = createServerAction$(async (formData: FormData) => {
-		const data = formDataToObject(formData, { transformers: { points: Number } });
+	const [addingTodos, addTodo] = createServerMultiAction$(addTodoFn);
+	const [name, setName] = createSignal('');
+	let nameRef: HTMLInputElement | undefined;
+	let pointsRef: HTMLInputElement | undefined;
 
-		if (!isAddTodoInput(data)) {
-			return console.error('Error on todo add: Invalid data');
-		}
+	const optimisticTodos = (): TodoDocument[] => {
+		const inputToObject = (input: FormData) => {
+			return formDataToObject(input, { transformers: { points: Number } });
+		};
 
-		return await databases.createDocument<TodoDocument>(
-			DATABASE_ID,
-			TODO_COLLECTION_ID,
-			'unique()',
-			{
-				...data,
-				session_key: sessionKey
+		const parsedAddingTodos: TodoDocument[] = addingTodos.pending
+			.filter((t) => {
+				return isAddTodoInput(inputToObject(t.input));
+			})
+			.map((t) => {
+				const dataObj = inputToObject(t.input) as AddTodoInput;
+
+				return {
+					...dataObj,
+					checked: false,
+					disabled: true,
+					$id: uuidv4(),
+					$collectionId: '',
+					$databaseId: '',
+					$createdAt: '',
+					$updatedAt: '',
+					$permissions: []
+				};
+			});
+
+		return [...(todos()?.documents ?? []), ...parsedAddingTodos];
+	};
+
+	const points = () => {
+		return optimisticTodos().reduce((acc, todo) => {
+			if (todo.checked) {
+				return acc + todo.points;
 			}
-		);
+
+			return acc;
+		}, 0);
+	};
+
+	createEffect(function resetForm() {
+		optimisticTodos().length;
+		if (!nameRef || !pointsRef) return;
+		nameRef.value = '';
+		pointsRef.value = '1';
+		nameRef.focus();
 	});
 
 	return (
 		<div class={classes(styles.container, 'container')}>
 			<div class={styles.header}>
 				<div class={styles.points}>
-					{/* <Counter value={points} /> */}
+					{points()}
 					<Icon icon="star" />
 				</div>
 				<div class={styles.actions}>
@@ -66,9 +120,17 @@ export default function Home() {
 					</form>
 				</div>
 			</div>
-			<Form class={styles.addWrapper}>
-				<input class={classes('input', styles.title)} placeholder="Todo title" name="title" />
+			<addTodo.Form class={styles.addWrapper}>
 				<input
+					ref={nameRef}
+					class={classes('input', styles.title)}
+					placeholder="Todo title"
+					name="title"
+					value={name()}
+					onChange={(e) => setName(e.currentTarget.value)}
+				/>
+				<input
+					ref={pointsRef}
 					class={classes('input', styles.points)}
 					value="1"
 					type="number"
@@ -82,10 +144,10 @@ export default function Home() {
 				>
 					Add
 				</button>
-			</Form>
+			</addTodo.Form>
 
 			<div class={styles.todos}>
-				<For each={todos()?.documents}>
+				<For each={optimisticTodos()}>
 					{(todo) => (
 						// <div animate:flip={{ duration: 500 }} in:fade out:fade={{ duration: 100 }}>
 						<Todo todo={todo} disabled={todo.disabled} />

@@ -1,5 +1,5 @@
 import { Component } from 'solid-js';
-import { createServerAction$ } from 'solid-start/server';
+import { createServerAction$, redirect } from 'solid-start/server';
 import { DATABASE_ID, TODO_COLLECTION_ID } from '~/constants';
 import { databases } from '~/lib/appwrite';
 import { sessionKey } from '~/lib/session';
@@ -16,48 +16,51 @@ type Props = {
 	disabled?: boolean;
 };
 
+const delFn = async (formData: FormData) => {
+	const { id } = formDataToObject(formData);
+
+	if (!id || typeof id !== 'string') {
+		return console.error('Error on todo delete: Invalid data');
+	}
+
+	await databases.deleteDocument(DATABASE_ID, TODO_COLLECTION_ID, id);
+	return redirect('/');
+};
+
+const updateFn = async (formData: FormData) => {
+	const data = formDataToObject(await formData, {
+		transformers: { checked: (v) => v === 'true' },
+		defaultValues: { checked: false }
+	});
+
+	if (!isUpdateTodoInput(data)) {
+		return console.error('Error on todo update: Invalid data');
+	}
+
+	const updateObj = objectFilter(data, (k) => k !== 'id');
+	await databases.updateDocument<TodoDocument>(DATABASE_ID, TODO_COLLECTION_ID, data.id, updateObj);
+
+	return redirect('/');
+};
+
 export const Todo: Component<Props> = (props) => {
-	const [, deleteTodo] = createServerAction$(async (formData: FormData) => {
-		const { id } = formDataToObject(formData);
-
-		if (!id || typeof id !== 'string') {
-			return console.error('Error on todo delete: Invalid data');
-		}
-
-		await databases.deleteDocument(DATABASE_ID, TODO_COLLECTION_ID, id);
-	});
-
-	const [, updateTodo] = createServerAction$(async (formData: FormData) => {
-		const data = formDataToObject(await formData, {
-			transformers: { checked: (v) => v === 'true' },
-			defaultValues: { checked: false }
-		});
-
-		
-		if (!isUpdateTodoInput(data)) {
-			return console.error('Error on todo update: Invalid data');
-		}
-		
-		const updateObj = objectFilter(data, (k) => k !== 'id');
-
-		await databases.updateDocument<TodoDocument>(
-			DATABASE_ID,
-			TODO_COLLECTION_ID,
-			data.id,
-			updateObj
-		);
-	});
+	const [deleting, del] = createServerAction$(delFn);
+	const [updating, update] = createServerAction$(updateFn);
 
 	return (
 		<div
 			class={classes(styles.todo)}
-			classList={{ disabled: props.disabled }}
+			classList={{ [styles.disabled]: props.disabled || deleting.pending }}
 		>
-		<updateTodo.Form>
-			<input type="hidden" name="id" value={props.todo.$id} />
-			<input type="hidden" name="checked" value={`${!props.todo.checked}`} />
-			<Checkbox checked={props.todo.checked} />
-		</updateTodo.Form>
+			<update.Form>
+				<input type="hidden" name="id" value={props.todo.$id} />
+				<input type="hidden" name="checked" value={`${props.todo.checked === false}`} />
+				<Checkbox
+					checked={
+						updating.pending ? updating.input?.get('checked') === 'true' : props.todo.checked
+					}
+				/>
+			</update.Form>
 
 			<div class={styles.title} classList={{ checked: props.todo.checked }}>
 				<span>{props.todo.title}</span>
@@ -68,12 +71,12 @@ export const Todo: Component<Props> = (props) => {
 				<Icon icon="star" />
 			</div>
 
-		<deleteTodo.Form>
-			<input type="hidden" name="id" value={props.todo.$id} />
-			<button class={classes('clickable', styles.clickable)}>
-				<Icon icon="trash-2" />
-			</button>
-			</deleteTodo.Form>
+			<del.Form>
+				<input type="hidden" name="id" value={props.todo.$id} />
+				<button class={classes('clickable', styles.clickable)}>
+					<Icon icon="trash-2" />
+				</button>
+			</del.Form>
 		</div>
 	);
 };
