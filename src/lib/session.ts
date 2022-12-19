@@ -9,3 +9,5 @@ export const sessionStorage = createCookieSessionStorage({
 		httpOnly: true
 	}
 });
+
+export const sessionKey = 'solid-key';

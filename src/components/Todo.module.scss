@@ -1,4 +1,8 @@
-.form {
+.todo {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
   transition: opacity var(--transition-appearance);
 
   &.disabled {
@@ -9,12 +13,6 @@
       pointer-events: none;
     }
   }
-}
-
-.todo {
-  display: flex;
-  align-items: center;
-  width: 100%;
 }
 
 .title {

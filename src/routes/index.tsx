@@ -1,21 +1,21 @@
 import { Query } from 'appwrite';
 import { For } from 'solid-js';
 import { useRouteData } from 'solid-start';
-import { createServerData$ } from 'solid-start/server';
+import { createServerAction$, createServerData$ } from 'solid-start/server';
 import { Todo } from '~/components/Todo';
 import { DATABASE_ID, TODO_COLLECTION_ID } from '~/constants';
 import { databases } from '~/lib/appwrite';
+import { sessionKey } from '~/lib/session';
 import { isModelsDocumentList } from '~/types/appwrite';
-import { isTodo } from '~/types/todo';
+import { isAddTodoInput, isTodo, TodoDocument } from '~/types/todo';
 import { Icon } from '~/UI/Icon';
+import { formDataToObject } from '~/utils/object';
 import { classes } from '~/utils/style';
 import styles from './index.module.scss';
 
 export function routeData() {
 	return createServerData$(async (_, ev) => {
 		// TODO: Implement cookie session
-		const sessionKey = 'solid-key';
-
 		const todos = await databases.listDocuments(DATABASE_ID, TODO_COLLECTION_ID, [
 			Query.equal('session_key', sessionKey)
 		]);
@@ -30,6 +30,23 @@ export function routeData() {
 
 export default function Home() {
 	const todos = useRouteData<typeof routeData>();
+	const [_, { Form }] = createServerAction$(async (formData: FormData) => {
+		const data = formDataToObject(formData, { transformers: { points: Number } });
+
+		if (!isAddTodoInput(data)) {
+			return console.error('Error on todo add: Invalid data');
+		}
+
+		return await databases.createDocument<TodoDocument>(
+			DATABASE_ID,
+			TODO_COLLECTION_ID,
+			'unique()',
+			{
+				...data,
+				session_key: sessionKey
+			}
+		);
+	});
 
 	return (
 		<div class={classes(styles.container, 'container')}>
@@ -49,17 +66,11 @@ export default function Home() {
 					</form>
 				</div>
 			</div>
-			<form class={styles.addWrapper} method="post" action="?/add">
-				<input
-					// bind:this={titleEl}
-					class={classes('input', styles.title)}
-					// bind:value={todoTitle}
-					placeholder="Todo title"
-					name="title"
-				/>
+			<Form class={styles.addWrapper}>
+				<input class={classes('input', styles.title)} placeholder="Todo title" name="title" />
 				<input
 					class={classes('input', styles.points)}
-					// bind:value={todoPoints}
+					value="1"
 					type="number"
 					name="points"
 					min="1"
@@ -71,7 +82,7 @@ export default function Home() {
 				>
 					Add
 				</button>
-			</form>
+			</Form>
 
 			<div class={styles.todos}>
 				<For each={todos()?.documents}>
